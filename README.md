@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 # Climb Beyond
 
 A tiny  platformer written in **Python + pygame**.
