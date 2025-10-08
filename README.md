@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Climb Beyond
 
 A tiny  platformer written in **Python + pygame**.
@@ -58,3 +59,7 @@ celestish_homework/
 # climbbeyond
 hausaufgaben spiel von Artemiy, Arjun, Prabda, Dmytro
 >>>>>>> 01da977005215006fcece08cfbd8430b71940a64
+=======
+# climbbeyond
+Homework game
+>>>>>>> 57bdde1bc8d096210ca5b7b2c0ae70a9a59446fe
