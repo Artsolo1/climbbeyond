@@ -9,9 +9,9 @@ import pygame as pg
 # "sys" talk to Python system itself;
 # "json" work with Python and JSON files;
 # "time" measure and keep track of time;
-# "argparse" read commands written in terminal;
+# "argparse" read arguments written in terminal;
 # "glob" search for files that match given pattern;
-# "pygame" run game window, draw graphics, and read input
+# "pygame" run game window, draw graphics, and read input - "pg" for short
 
 # M - Module; F - Function; V - Variable
 # "def wasd():" F to create F "wasd()"
@@ -20,29 +20,36 @@ import pygame as pg
 # "with ... as x" F to create a V "x" to hold the result of what is in [...] and after the end of the block releas the V
 # ".." = folder 1 level up
 
+# speed mostly in pixels per second, accseleration in  pixels per second^2, time in seconds
+
 # ------------------------------Config------------------------------
 
-TILE = 16
-SCREEN_W, SCREEN_H = 480, 270   # internal resolution
+# Graphics
+TILE = 16                       # size of one map tile (pixels)
+SCREEN_W, SCREEN_H = 480, 270   # internal resolution of game window (pixels)
 BG_COLOR = (18, 20, 28)
 WALL_COLOR = (70, 80, 100)
-NONHANG_WALL_COLOR = (150, 90, 90)  # boundary (non-grabbable)
+NONHANG_WALL_COLOR = (150, 90, 90)  #boundary walls
 SPIKE_COLOR = (210, 80, 80)
 EXIT_COLOR = (120, 200, 120)
 NPC_COLOR = (230, 210, 120)
 PLAYER_COLOR = (240, 240, 255)
 
-# Movement tuning (can tweak later)
+# Movement
 MOVE_ACC = 900
-MOVE_DECAY_GROUND = 8.0
-MOVE_DECAY_AIR = 2.0
+MOVE_DECAY_GROUND = 8.0       # multiplier
+MOVE_DECAY_AIR = 2.0          # multiplier
 MAX_SPD_X = 150
 GRAVITY = 600
-JUMP_VEL = -250     # jump height = vel^2 / (2 x gravity)
-COYOTE_TIME = 0.12
-STAMINA_MAX = 5.0    # seconds
-CLIMB_SPEED = 80     # px/s while grabbing
-ALLOW_EDGE_GRAB = False  # do not allow grabbing boundary walls
+JUMP_VEL = -250               # jump starting velocity (negative = up)
+COYOTE_TIME = 0.12            # time for jump after leaving ground
+MAX_FALL_SPEED = 400
+MAX_RISE_SPEED = -300
+
+# Climb
+STAMINA_MAX = 5.0
+CLIMB_SPEED = 80
+ALLOW_EDGE_GRAB = False       # grabbing boundary walls
 
 # Dash
 DASH_SPEED = 450
@@ -51,7 +58,7 @@ DASH_COOLDOWN = 0.6
 MAX_DASHES = 1
 
 # Camera
-CAM_LERP = 0.12
+CAM_LERP = 0.12               # how quickly camera follows player (0–1, fraction per frame)
 
 # ------------------------------Files------------------------------
  
@@ -63,12 +70,17 @@ LEVELS_DIR = os.path.join(os.path.dirname(__file__), "..", "levels")
 
 # ------------------------------Helpers------------------------------
 
+# sets allowed range to V
 def clamp(v, lo, hi): 
     return lo if v < lo else hi if v > hi else v
 
+# "rect" F in "pg" to create a rectangle object [x from 0; y from 0; width; height] top-left corner in pixels (because of *TILE)
 def rect_from_tile(tx, ty):
     return pg.Rect(tx*TILE, ty*TILE, TILE, TILE)
 
+# detects which tiles could be overlapped depending on rect position
+# x0 is left pixel of rect floor-divided by tile size to get tile index; -1 expands search for safety
+# returns list of (x, y) pairs [tile coordinates] to be checked for collisions
 def tiles_overlapping(rect):
     x0 = int(rect.left // TILE) - 1
     y0 = int(rect.top // TILE) - 1
@@ -76,6 +88,8 @@ def tiles_overlapping(rect):
     y1 = int(rect.bottom // TILE) + 1
     return [(x, y) for x in range(x0, x1+1) for y in range(y0, y1+1)]
 
+# gives a number between a and b depending on t in range from 0 to 1 [10 + (20 - 10) * 0,3 = 13 —> 30% of the way from 10 to 20]
+# creates snooth camera following 
 def lerp(a, b, t): return a + (b - a) * t
 
 # open()" F to open a file [on "STATS_PATH" path, to "r" read in "encoding" format "utf-8"];
@@ -321,6 +335,9 @@ class Player:
                 self.vel.y += GRAVITY * dt
             else:
                 self.vel.y = 0
+
+        self.vel.y = clamp(self.vel.y, MAX_RISE_SPEED, MAX_FALL_SPEED)
+
 
         # ---- ground jump (no buffer) ----
         if is_pressed(keys, ["jump","jump_alt"]) and self.coyote > 0:
