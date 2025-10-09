@@ -89,7 +89,7 @@ def tiles_overlapping(rect):
     return [(x, y) for x in range(x0, x1+1) for y in range(y0, y1+1)]
 
 # gives a number between a and b depending on t in range from 0 to 1 [10 + (20 - 10) * 0,3 = 13 —> 30% of the way from 10 to 20]
-# creates snooth camera following 
+# used for smooth camera following 
 def lerp(a, b, t): return a + (b - a) * t
 
 # open()" F to open a file [on "STATS_PATH" path, to "r" read in "encoding" format "utf-8"];
